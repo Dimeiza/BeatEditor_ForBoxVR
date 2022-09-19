@@ -32,7 +32,7 @@ As far as I know, There isn't any tool that competitive to this in OSS.
 
 You can choice 2 install method depends your environment.
 
-### 1. Stand-alone executable(Recommand)
+### 1. Stand-alone executable(Recommend)
 
 1. Download zip file in Releases.
 2. Unzip zip file.
