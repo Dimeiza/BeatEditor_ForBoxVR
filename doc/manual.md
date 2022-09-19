@@ -41,7 +41,7 @@ Replace (user name) to your windows user name.
 
 * And If click specific row of segment table before press 'play' button, BeatEditor will play from near this segment. 
 
-* These functions is simplified simulater of BoxVR during beat editing. You can check a result of editing beat file.
+* These functions are simplified simulater of BoxVR during beat editing. You can check a result of editing beat file.
 
 ### 4. Edit beat file
 
@@ -56,13 +56,13 @@ Replace (user name) to your windows user name.
 ![](img/saveDialog.png)
 
 * After input file name(I recommend same file to original beat data), press 'store'.
-	* If you prepared backup beat data, you can update original file.
+	* If you prepared backup beat data, you can update original file directly.
 
 ### 6. Test your beat file.
 
 * If you replace original beat data to results of you edit, play BoxVR for test it.
 
-You may be necessary to repeat this procedure(1 to 6) as you likes.
+You may be necessary to repeat this procedure(1 to 6).
 
 ## techniques and knowledge for effective editing of BoxVR beat data
 
@@ -72,14 +72,14 @@ Result a little analysis a mechanism in BoxVR to control beat with a beat data j
 
 #### 1. Separate each segment with 16 beats and set '_energyLevel' by segment.
 
-[As shared in reddit](https://www.reddit.com/r/vrfit/comments/j69trv/improving_boxvr_custom_songs_windows_technical/), We can change beat pattern(punch/duck,etc...) to edit '_energyLevel'. 
+[As shared in reddit](https://www.reddit.com/r/vrfit/comments/j69trv/improving_boxvr_custom_songs_windows_technical/), We can edit '_energyLevel' to change beat pattern(punch/duck,etc...).
 
-But I can't change each 1 beat pattern complete separately.
+But I can't change each 1 beat pattern individually.
 
 During I tried several songs in hard mode, I found:
 
-* I can change a beat pattern with **a set of 16 beats**. 
-* It is effective that setting of '_energyLevel' by each segment.
+* The beat pattern can be changed every 16 beats. 
+* setting of '_energyLevel' is effective in the range of each segment.
 
 So, '_energyLevel' actual means:
 
@@ -143,7 +143,7 @@ So, I show an example.
 
 #### 4. check a result of segment setting.
 
-* If you finished setting energyLevel, let'ss check result, [play music in BeatEditor.](#3-play-track-data)
+* If you finished setting energyLevel, let's check result, [play music in BeatEditor.](#3-play-track-data)
 
 ### 2. Adjust beatLength for irregular time signature
 
