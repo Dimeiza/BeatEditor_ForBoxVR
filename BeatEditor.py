@@ -15,7 +15,7 @@ beat_table_heading =    ['_index','_triggerTime','_beatLength','_beatInBar','_ma
 
 track_data_label_list = ['trackId','originalFilePath','originalTrackName','originalArtist','duration','firstBeatOffset','bpm']
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 def updateGUITable():
@@ -234,7 +234,7 @@ def GUI_event_loop():
             music.set_beat_callback(beat_callback_gui)
             if table_segment_list_col != 0:
                 current_time = boxVRJson.get_segment_data_element(table_segment_list_col,'_startTime')
-                music.set_current_time(current_time)
+                music.set_paused_time(current_time)
             music.start()
         if event == 'pause':
             music.pause()
