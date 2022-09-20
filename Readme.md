@@ -6,7 +6,7 @@ Tool to edit beat data(JSON file) for Training Mode(Custom song import function)
 
 I wrote this tool for (only) me. If you can edit track data with this tool, you should think you are lucky. 
 
-This tool and I don't promice it is useful for you.
+This tool and I don't promise it is useful for you.
 
 You can only use this tool at your own risk.
 
@@ -14,7 +14,7 @@ You can only use this tool at your own risk.
 
 This tool can:
 
-* Edit beat data in track data file(JSON) for Training mode in BoxVR.
+* Edit beat data in a track data file(JSON) for Training mode in BoxVR.
 	* change beat action(punch/duck/dodge) in any time zone.
 	* change beat timing.
 
@@ -26,24 +26,24 @@ I will upload a demo movie to youtube soon.
 
 ## VS.
 
-As far as I know, There isn't any tool that competitive to this in OSS.
+As far as I know, There isn't any tool that is competitive to this in OSS.
 
 ## Installation
 
-You can choice 2 install method depends your environment.
+You can choose two installation methods depending on your environment.
 
 ### 1. Stand-alone executable(Recommend)
 
-1. Download zip file in Releases.
-2. Unzip zip file.
+1. Download a zip file in Releases.
+2. Unzip the zip file.
 3. Execute BeatEditor.exe.
 
 ### 2. Python script
 
-If you choice this method, You must prepare python3 environment in your PC.
+If you choose this method, You must prepare a python3 environment on your PC.
 
 1. Clone this repository to your local PC.
-2. Run this command if libraries that this tool depends did'nt installedin your python environment.
+2. Run this command if libraries that this tool depends on didn't install in your python environment.
 ```
 pip install -r requirements.txt
 ```
@@ -60,12 +60,12 @@ Check [manual page](doc/manual.md).
 
 No support.
 
-However, you can open issue to share your problem. If you do so, It is benefitial to share information that can use analysis problem for author(me) and other users.
+However, you can open an issue to share your problem. If you do so, It is beneficial to share information that can use in analysis problems for the author(me) and other users.
 
-For example, your environment, detailed situation problem occured, original/edit track data and an music relates a track data.
+For example, your environment, detailed situation problem occurred, original/edit track data and music relates a track data.
 
 ## dependency
 
-This tool depends these software. Thanks for authors and contributers.
+This tool depends on this software. Thanks to the authors and contributors.
 
 * [PySimpleGUI](https://github.com/PySimpleGUI/PySimpleGUI)
