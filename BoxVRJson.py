@@ -22,6 +22,8 @@ class BoxVRJson:
     # save JSON
     def saveboxVRJSON(self,filepath):
         output_json_file = open(filepath, mode="w", encoding="utf-8")
+
+        self.track_data['beatStrucureJSON'] = json.dumps(self.beat_data)
         json.dump(self.track_data, output_json_file)
         output_json_file.close()
 
