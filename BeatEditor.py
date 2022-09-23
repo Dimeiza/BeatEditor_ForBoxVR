@@ -224,6 +224,9 @@ def GUI_event_loop():
             break
         if event == '_loaded_beat_file':      
             music.stop()
+            table_beat_list_col = 0
+            table_segment_list_col = 0
+            current_time = 0
             boxVRJson.loadboxVRJSON(values['_loaded_beat_file'])
             updateGUITable()
             music_file_path =window['originalFilePath'].get()
