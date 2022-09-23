@@ -118,6 +118,26 @@ class BoxVRJson:
         self.adjust_segment_list()
         self.write_segment_list_to_beat_list()
 
+    def forward_first_beat_to_next_beat_timing(self):
+
+        self.beat_data['_beatList']['_beats'][0]['_triggerTime'] = self.beat_data['_beatList']['_beats'][1]['_triggerTime']
+
+        self.adjust_beat_list()
+        self.adjust_segment_list()
+        self.write_segment_list_to_beat_list()
+
+    def back_first_beat_with_own_beatLength(self):
+
+        first_beat_candidate_trigger_time = self.beat_data['_beatList']['_beats'][0]['_triggerTime'] -self.beat_data['_beatList']['_beats'][0]['_beatLength']
+
+        if first_beat_candidate_trigger_time > 0:
+            self.beat_data['_beatList']['_beats'][0]['_triggerTime'] = first_beat_candidate_trigger_time
+
+        self.adjust_beat_list()
+        self.adjust_segment_list()
+        self.write_segment_list_to_beat_list()
+
+
     def get_next_beat_index(self,current_time):
 
         for beat in self.beat_data['_beatList']['_beats']:
@@ -266,11 +286,9 @@ class BoxVRJson:
             if start_beat_index + beat_num != next_start_beat_index:
                 self.beat_data['_segmentList']['_segments'][i+1]['_startBeatIndex'] = start_beat_index + beat_num
 
-            # adjust start time
-            start_time =float(self.beat_data['_segmentList']['_segments'][i]['_startTime'])            
-            length = float(self.beat_data['_segmentList']['_segments'][i]['_length'])
-            next_start_time = float(self.beat_data['_segmentList']['_segments'][i]['_startTime'])
-
-            if start_time + length != next_start_time:
-                self.beat_data['_segmentList']['_segments'][i+1]['_startTime'] = start_time + length
-
+            # adjust start time with beat list
+            start_time =float(self.beat_data['_beatList']['_beats'][start_beat_index]['_triggerTime'])            
+            length = self.get_sum_of_beat_length(start_beat_index,beat_num)
+            
+            self.beat_data['_segmentList']['_segments'][i]['_startTime'] = start_time
+            self.beat_data['_segmentList']['_segments'][i]['_length'] = length

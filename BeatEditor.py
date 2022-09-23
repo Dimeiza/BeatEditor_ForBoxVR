@@ -15,7 +15,7 @@ beat_table_heading =    ['_index','_triggerTime','_beatLength','_beatInBar','_ma
 
 track_data_label_list = ['trackId','originalFilePath','originalTrackName','originalArtist','duration','firstBeatOffset','bpm']
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 def updateGUITable():
@@ -164,7 +164,12 @@ def build_GUI():
     ]
 
     track_control_group = [
-        [sg.FileBrowse('load',target='_loaded_beat_file', file_types = (('BoxVR beat Files', '*.trackdata.txt'),)), sg.Button('play'),sg.Button('pause'),sg.Button('stop'),sg.FileSaveAs('save',target='_save_target_beat_file',file_types =  (('BoxVR beat Files', '*.trackdata.txt'),)),sg.Button('exit')],
+        [sg.FileBrowse('load',target='_loaded_beat_file', file_types = (('BoxVR beat Files', '*.trackdata.txt'),)), sg.Button('play'),sg.Button('pause'),sg.Button('stop'),sg.FileSaveAs('save',target='_save_target_beat_file',file_types =  (('BoxVR beat Files', '*.trackdata.txt'),))],
+    ]
+
+    track_group = [
+        [sg.Frame('',track_basic_information_group)],
+        [sg.Frame('',track_control_group)]
     ]
 
     reconstruct_segment_group = [
@@ -184,10 +189,22 @@ def build_GUI():
     for beat_label in beat_table_heading:
         segment_width.append(len(beat_label) + 3)
 
+    selected_beat_control_group = [
+        [sg.Button('insert beat',key='insert_beat'),sg.Button('remove beat',key='remove_beat')],
+        [sg.Button('double beatLength',key='double_beatlength'),sg.Button('half beatLength',key='half_beatlength')],
+    ]
+
+    first_beat_control_group = [
+        [sg.Button('move next triggerTime',key='forward_first_beat_to_next'),sg.Button('back with own beatLength',key='back_first_beat_with_own_beatLength')],
+    ]
+
+    beat_control_group = [
+        [sg.Frame('selected beat',selected_beat_control_group)],
+        [sg.Frame('first beat',first_beat_control_group)]
+    ]
 
     beat_group = [
-        [sg.Table([[]],headings=beat_table_heading,vertical_scroll_only=False,col_widths=beat_width,key='beats',auto_size_columns=False,enable_click_events=True)],
-        [sg.Button('insert beat'),sg.Button('remove beat'),sg.Button('multiply selected beatLength'),sg.Text('by'),sg.Input(key='multiplier',size=(5,1),default_text=2.0)],
+        [sg.Table([[]],headings=beat_table_heading,vertical_scroll_only=False,col_widths=beat_width,key='beats',auto_size_columns=False,enable_click_events=True),sg.Frame('',beat_control_group)],
     ]
 
     ducking_left_glove_group = [[sg.Image(key='ducking_left_glove',source='res/ducking_left_glove.png',visible=False)]]
@@ -203,8 +220,7 @@ def build_GUI():
     ]
 
 
-    layout = [  [sg.Frame('track basic information',track_basic_information_group),sg.Frame('beat indication',glove_icon_group)],
-                [sg.Frame('track control',track_control_group)],
+    layout = [  [sg.Frame('track',track_group),sg.Frame('beat indication',glove_icon_group)],
                 [sg.Frame('segment',segment_group)],
                 [sg.Frame('beat',beat_group)],
             ]
@@ -257,18 +273,28 @@ def GUI_event_loop():
             boxVRJson.insert_segment_to_segment_list(table_segment_list_col)
             updateGUITable()
 
-        if event == 'remove beat':
+        if event == 'remove_beat':
             boxVRJson.remove_beat_from_beat_list(table_beat_list_col)
             updateGUITable()
 
-        if event == 'insert beat':
+        if event == 'insert_beat':
             boxVRJson.insert_beat_from_beat_list(table_beat_list_col)
             updateGUITable()
 
-        if event == 'multiply selected beatLength':
-            multiplier = float(window['multiplier'].get())
-            boxVRJson.multiply_selected_beat_length(table_beat_list_col,multiplier)
+        if event == 'double_beatlength':
+            boxVRJson.multiply_selected_beat_length(table_beat_list_col,2.0)
             updateGUITable()
+        if event == 'half_beatlength':
+            boxVRJson.multiply_selected_beat_length(table_beat_list_col,0.5)
+            updateGUITable()
+        if event == 'forward_first_beat_to_next':
+            boxVRJson.forward_first_beat_to_next_beat_timing()
+            updateGUITable()
+
+        if event == 'back_first_beat_with_own_beatLength':
+            boxVRJson.back_first_beat_with_own_beatLength()
+            updateGUITable()
+
 
         elif isinstance(event, tuple):
 
