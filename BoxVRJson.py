@@ -130,8 +130,8 @@ class BoxVRJson:
 
         first_beat_candidate_trigger_time = self.beat_data['_beatList']['_beats'][0]['_triggerTime'] -self.beat_data['_beatList']['_beats'][0]['_beatLength']
 
-        if first_beat_candidate_trigger_time > 0:
-            self.beat_data['_beatList']['_beats'][0]['_triggerTime'] = first_beat_candidate_trigger_time
+        # if first_beat_candidate_trigger_time > 0:
+        self.beat_data['_beatList']['_beats'][0]['_triggerTime'] = first_beat_candidate_trigger_time
 
         self.adjust_beat_list()
         self.adjust_segment_list()
@@ -177,32 +177,18 @@ class BoxVRJson:
     def get_segment_count(self):
         return len(self.beat_data['_segmentList']['_segments'])
 
-    def reconstructSegment(self,first_segment_num_beat,segment_num_beat):
+    def reconstructSegment(self,segment_num_beat,average_energy):
 
         self.beat_data['_segmentList']['_segments'].clear()
-        self.logger.debug(self.beat_data['_segmentList']['_segments'])
 
-        first_segment = {}
-        first_segment_number_of_beat = first_segment_num_beat
-        first_segment['_startTime'] = 0.1 + 1.0
-        first_segment['_startBeatIndex'] = 0
-        first_segment['_numBeats'] = first_segment_number_of_beat
-        first_segment['_length'] = self.get_sum_of_beat_length(0,first_segment_number_of_beat)
-        first_segment['_averageEnergy'] = 1.5
-        first_segment['_index'] = 0
-        first_segment['_energyLevel'] = 0
-        self.logger.debug("index={},new segment:{}".format(0,first_segment))
-
-        self.beat_data['_segmentList']['_segments'].append(first_segment)
-
-        for beat in self.beat_data['_beatList']['_beats'][first_segment_number_of_beat:]:
+        for beat in self.beat_data['_beatList']['_beats']:
             new_segment = {}
-            if (beat['_index'] - first_segment_number_of_beat) % segment_num_beat == 0:          
+            if (beat['_index'] ) % segment_num_beat == 0:          
                 new_segment['_startTime'] = float(beat['_triggerTime'])
                 new_segment['_startBeatIndex'] = int(beat['_index'])
                 new_segment['_numBeats'] = segment_num_beat
                 new_segment['_length'] = self.get_sum_of_beat_length(int(beat['_index']),segment_num_beat)
-                new_segment['_averageEnergy'] = 1.5
+                new_segment['_averageEnergy'] = average_energy
                 new_segment['_index'] = 0
                 new_segment['_energyLevel'] = 0
                 self.logger.debug("index={},new segment:{}".format(beat['_index'],new_segment))
@@ -211,6 +197,7 @@ class BoxVRJson:
 
         self.logger.debug(self.beat_data['_segmentList']['_segments'])
         self.write_segment_list_to_beat_list()
+
 
     def get_segment_number_from_beat_index(self,beat_index):
 
@@ -287,7 +274,7 @@ class BoxVRJson:
                 self.beat_data['_segmentList']['_segments'][i+1]['_startBeatIndex'] = start_beat_index + beat_num
 
             # adjust start time with beat list
-            start_time =float(self.beat_data['_beatList']['_beats'][start_beat_index]['_triggerTime'])            
+            start_time =float(self.beat_data['_beatList']['_beats'][start_beat_index]['_triggerTime']) 
             length = self.get_sum_of_beat_length(start_beat_index,beat_num)
             
             self.beat_data['_segmentList']['_segments'][i]['_startTime'] = start_time

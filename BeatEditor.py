@@ -148,6 +148,9 @@ def beat_callback_gui(beat_index):
 
     window['now_energy_level'].update(energyLevel)
 
+def gui_callback_function(playtime):
+    window['PlayTime'].update(playtime)
+
 def build_GUI():
 
     global window
@@ -169,11 +172,7 @@ def build_GUI():
 
     track_group = [
         [sg.Frame('',track_basic_information_group)],
-        [sg.Frame('',track_control_group)]
-    ]
-
-    reconstruct_segment_group = [
-        [sg.Button('reconstruct segment with'),sg.Text('numBeat(1st segment):'),sg.Input(key='firstSegmentNumBeats',size=(5,1),default_text=28),sg.Text('numBeat(after 2nd):'),sg.Input(key='segmentNumBeat',size=(5,1),default_text=16)]
+        [sg.Frame('',track_control_group),sg.Text('playtime:'),sg.Input('',size=(10,1),key='PlayTime'),sg.Text('delay:'),sg.Text('',key='delay_time')]
     ]
 
     segment_width=[]
@@ -182,7 +181,7 @@ def build_GUI():
 
     segment_group = [
         [sg.Table([[]],headings=segment_table_heading,vertical_scroll_only=False,col_widths=segment_width,key='segmentList',auto_size_columns=False,enable_click_events=True)],
-        [sg.Button('insert'),sg.Button('remove'),sg.Frame('reconstruct',layout=reconstruct_segment_group)],
+        [sg.Button('insert'),sg.Button('remove'), sg.Button('reconstruct segment with 16 beats',key='reconstruct_segment'),sg.Text('average energy:'),sg.Input('1.0',key='average_energy',size=(5,1))]    
     ]
 
     beat_width=[]
@@ -247,10 +246,13 @@ def GUI_event_loop():
             updateGUITable()
             music_file_path =window['originalFilePath'].get()
             music.set_boxVR_Json(boxVRJson)
+
+            music.load(music_file_path)
+            window['delay_time'].update(music.get_delay())
         if event == 'play':
             music.stop()
-            music.load(music_file_path)
             music.set_beat_callback(beat_callback_gui)
+            music.set_gui_callback(gui_callback_function)
             if table_segment_list_col != 0:
                 current_time = boxVRJson.get_segment_data_element(table_segment_list_col,'_startTime')
                 music.set_paused_time(current_time)
@@ -261,10 +263,9 @@ def GUI_event_loop():
             music.stop()
         if event == '_save_target_beat_file':
             boxVRJson.saveboxVRJSON(values['_save_target_beat_file'])
-        if event == 'reconstruct segment with':
-            first_segment_num_beats = int(window['firstSegmentNumBeats'].get())
-            segment_num_beats = int(window['segmentNumBeat'].get())
-            boxVRJson.reconstructSegment(first_segment_num_beats,segment_num_beats)
+        if event == 'reconstruct_segment':
+            average_energy = float(window['average_energy'].get())
+            boxVRJson.reconstructSegment(16,average_energy)
             updateGUITable()
         if event == 'remove':
             boxVRJson.remove_segment_from_segment_list(table_segment_list_col)
@@ -294,7 +295,6 @@ def GUI_event_loop():
         if event == 'back_first_beat_with_own_beatLength':
             boxVRJson.back_first_beat_with_own_beatLength()
             updateGUITable()
-
 
         elif isinstance(event, tuple):
 

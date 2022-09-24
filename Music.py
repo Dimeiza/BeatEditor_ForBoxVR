@@ -5,6 +5,8 @@ import wave
 import threading
 import logging
 
+from BoxVRJson import BoxVRJson
+
 class Music:
 
 	boxVRJson = None
@@ -20,10 +22,15 @@ class Music:
 
 	flag_playing_sound = False
 	beat_callback_function = None
+	gui_callback_function = None
 
 	musicPlayThread = None
-
 	logger = None
+
+	delay = 0
+	sound= None
+
+	beat_callback_thread = None
 
 	def __init__(self):
 		self.logger = logging.getLogger(__name__)
@@ -52,8 +59,20 @@ class Music:
 		self.wf_sound = wave.open('./res/hit.wav',"rb")
 		self.wf_sound_punch_air = wave.open('./res/punchair.wav',"rb")
 
+		bpm = float(self.boxVRJson.get_track_data_element('bpm'))
+		avg_beat_time = 1.0 /bpm * 60
+
+		# set delay based on bpm(it seems 8 beats delay between trigger time and actual impact in box vr)
+		self.delay = avg_beat_time * 8.0
+
+		self.sound_data = self.wf_sound.readframes(self.wf_sound.getnframes())
+		self.punch_air_sound_data = self.wf_sound_punch_air.readframes(self.wf_sound_punch_air.getnframes())
+
 	def set_beat_callback(self,beat_callback_function):
 		self.beat_callback_function = beat_callback_function
+
+	def set_gui_callback(self,gui_callback_function):
+		self.gui_callback_function = gui_callback_function
 
 	def set_paused_time(self,paused_time):
 		self.paused_time = paused_time
@@ -76,6 +95,13 @@ class Music:
 			self.musicPlayThread.daemon = True
 			self.musicPlayThread.start()
 
+	def get_delay(self):
+		return self.delay
+
+	def beat_action(self,sound_data,beat_index):
+		self.sound_stream.write(sound_data)
+		self.beat_callback_function(beat_index)
+
 	def play(self,start_time):
 
 		self.flag_playing_sound = True
@@ -83,9 +109,7 @@ class Music:
 		self.current_time = start_time
 		self.logger.debug(self.current_time)
 
-		bpm = float(self.boxVRJson.get_track_data_element('bpm'))
-		avg_beat_time = 1.0 /bpm * 60
-	
+		print(self.delay)
 		self.wf_music.setpos(int(self.current_time * self.wf_music.getframerate()))
 		beat_index = int(self.boxVRJson.get_next_beat_index(self.current_time))
 
@@ -94,34 +118,35 @@ class Music:
 		self.sound_stream = p.open(format=p.get_format_from_width(self.wf_sound.getsampwidth()), channels=self.wf_sound.getnchannels(), rate=self.wf_sound.getframerate(), output=True)
 
 		next_beat_trigger_time = float(self.boxVRJson.get_beat_data_element(beat_index,'_triggerTime'))
-		sound_data = self.wf_sound.readframes(self.wf_sound.getnframes())
-		punch_air_sound_data = self.wf_sound_punch_air.readframes(self.wf_sound_punch_air.getnframes())
 
 		self.music_stream.start_stream()
 
 		next_beat_energy_level = 4
 		beat_index_mod = 0
 
-		# set delay based on bpm
-		delay = avg_beat_time * 4
-
+		audio_thread = None
 		while self.music_stream.is_active():
+		
 			next_beat_trigger_time = float(self.boxVRJson.get_beat_data_element(beat_index,'_triggerTime'))
 			next_beat_energy_level = int(self.boxVRJson.get_beat_data_segment_element(beat_index,'_energyLevel'))
 
 			self.current_time = self.wf_music.tell() / self.wf_music.getframerate()
-			if self.current_time > next_beat_trigger_time + delay:
+			self.gui_callback_function(self.current_time - self.delay)
+
+			if self.current_time > next_beat_trigger_time + self.delay:
 				self.logger.debug("beat! index:{},current_time:{},trigger_time:{},energy_level:{}".format(beat_index,self.current_time,next_beat_trigger_time,next_beat_energy_level))
 				beat_index_mod = beat_index % 4
 				if next_beat_energy_level == 4:
 					pass
 				elif next_beat_energy_level == 2:
-					self.sound_stream.write(sound_data)
+					audio_thread = threading.Thread(target=self.beat_action,args=(self.sound_data,beat_index,))
+					audio_thread.start()
 				elif (next_beat_energy_level == 0 or next_beat_energy_level == 1 or next_beat_energy_level == 3) and (beat_index_mod == 0 or beat_index_mod == 1):
-					self.sound_stream.write(sound_data)
+					audio_thread = threading.Thread(target=self.beat_action,args=(self.sound_data,beat_index,))
+					audio_thread.start()
 				elif (next_beat_energy_level == 3) and (beat_index_mod == 2 or beat_index_mod == 3):
-					self.sound_stream.write(punch_air_sound_data)
-				self.beat_callback_function(beat_index)
+					audio_thread = threading.Thread(target=self.beat_action,args=(self.punch_air_sound_data,beat_index,))
+					audio_thread.start()
 				
 				beat_index = beat_index + 1
 
