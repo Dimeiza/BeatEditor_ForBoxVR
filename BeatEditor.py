@@ -247,7 +247,7 @@ def GUI_event_loop():
             music_file_path =window['originalFilePath'].get()
             music.set_boxVR_Json(boxVRJson)
 
-            music.load(music_file_path)
+            music.open_music_file(music_file_path)
             window['delay_time'].update(music.get_delay())
         if event == 'play':
             music.stop()

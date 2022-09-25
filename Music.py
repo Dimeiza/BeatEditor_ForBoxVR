@@ -35,6 +35,11 @@ class Music:
 	def __init__(self):
 		self.logger = logging.getLogger(__name__)
 
+		self.wf_sound = wave.open('./res/hit.wav',"rb")
+		self.wf_sound_punch_air = wave.open('./res/punchair.wav',"rb")
+		self.sound_data = self.wf_sound.readframes(self.wf_sound.getnframes())
+		self.punch_air_sound_data = self.wf_sound_punch_air.readframes(self.wf_sound_punch_air.getnframes())
+
 	def set_boxVR_Json(self,boxVRJson):
 		self.boxVRJson = boxVRJson
 
@@ -52,12 +57,11 @@ class Music:
 			data = self.wf_music.readframes(frame_count)
 			return (data, pyaudio.paContinue)
 
-	def load(self,music_file_path):
+	def open_music_file(self,music_file_path):
 		self.logger.debug(music_file_path)
 
+		self.close_music_file()
 		self.wf_music = wave.open(music_file_path, "rb")
-		self.wf_sound = wave.open('./res/hit.wav',"rb")
-		self.wf_sound_punch_air = wave.open('./res/punchair.wav',"rb")
 
 		bpm = float(self.boxVRJson.get_track_data_element('bpm'))
 		avg_beat_time = 1.0 /bpm * 60
@@ -65,8 +69,10 @@ class Music:
 		# set delay based on bpm(it seems 8 beats delay between trigger time and actual impact in box vr)
 		self.delay = avg_beat_time * 8.0
 
-		self.sound_data = self.wf_sound.readframes(self.wf_sound.getnframes())
-		self.punch_air_sound_data = self.wf_sound_punch_air.readframes(self.wf_sound_punch_air.getnframes())
+	def close_music_file(self):
+		if self.wf_music != None:
+			self.wf_music.close()
+			self.wf_music = None
 
 	def set_beat_callback(self,beat_callback_function):
 		self.beat_callback_function = beat_callback_function
@@ -136,9 +142,7 @@ class Music:
 			if self.current_time > next_beat_trigger_time + self.delay:
 				self.logger.debug("beat! index:{},current_time:{},trigger_time:{},energy_level:{}".format(beat_index,self.current_time,next_beat_trigger_time,next_beat_energy_level))
 				beat_index_mod = beat_index % 4
-				if next_beat_energy_level == 4:
-					pass
-				elif next_beat_energy_level == 2:
+				if next_beat_energy_level == 2:
 					audio_thread = threading.Thread(target=self.beat_action,args=(self.sound_data,beat_index,))
 					audio_thread.start()
 				elif (next_beat_energy_level == 0 or next_beat_energy_level == 1 or next_beat_energy_level == 3) and (beat_index_mod == 0 or beat_index_mod == 1):
@@ -147,11 +151,12 @@ class Music:
 				elif (next_beat_energy_level == 3) and (beat_index_mod == 2 or beat_index_mod == 3):
 					audio_thread = threading.Thread(target=self.beat_action,args=(self.punch_air_sound_data,beat_index,))
 					audio_thread.start()
+				else:
+					self.beat_callback_function(beat_index)
 				
 				beat_index = beat_index + 1
 
 		# stop stream (6)
 		self.music_stream.stop_stream()
 		self.music_stream.close()
-		self.wf_music.close()
 
