@@ -63,12 +63,6 @@ class Music:
 		self.close_music_file()
 		self.wf_music = wave.open(music_file_path, "rb")
 
-		bpm = float(self.boxVRJson.get_track_data_element('bpm'))
-		avg_beat_time = 1.0 /bpm * 60
-
-		# set delay based on bpm(it seems 8 beats delay between trigger time and actual impact in box vr)
-		self.delay = avg_beat_time * 8.0
-
 	def close_music_file(self):
 		if self.wf_music != None:
 			self.wf_music.close()
@@ -110,12 +104,17 @@ class Music:
 
 	def play(self,start_time):
 
+		bpm = float(self.boxVRJson.get_track_data_element('bpm'))
+		avg_beat_time = 1.0 /bpm * 60
+
+		# set delay based on bpm(it seems 8 beats delay between trigger time and actual impact in box vr)
+		self.delay = avg_beat_time * 8.0
+
 		self.flag_playing_sound = True
 		beat_index = 0
 		self.current_time = start_time
 		self.logger.debug(self.current_time)
 
-		print(self.delay)
 		self.wf_music.setpos(int(self.current_time * self.wf_music.getframerate()))
 		beat_index = int(self.boxVRJson.get_next_beat_index(self.current_time))
 

@@ -110,6 +110,11 @@ class BoxVRJson:
         self.adjust_beat_list()
         self.write_segment_list_to_beat_list()
 
+    def update_bpm(self,bpm):
+        for beat in self.beat_data['_beatList']['_beats']:
+            beat['_bpm'] = bpm       
+        self.track_data['bpm'] = bpm
+
     def update_beat_list_value(self,json_key_str,beat_index,value):
         self.beat_data['_beatList']['_beats'][beat_index][json_key_str] = value
         self.logger.debug(self.beat_data['_beatList']['_beats'][beat_index])
@@ -173,6 +178,12 @@ class BoxVRJson:
             beat['_beatLength'] = beat_length_for_all
 
         self.adjust_beat_list()
+        self.append_necessary_beats_to_tail(beat_length_for_all,16,1.0,0)
+
+        new_bpm = 1.0 / beat_length_for_all  * 60
+        self.update_bpm(new_bpm)
+
+        self.adjust_beat_list()
         self.adjust_segment_list()
         self.write_segment_list_to_beat_list()
 
@@ -204,6 +215,45 @@ class BoxVRJson:
         self.logger.debug(self.beat_data['_segmentList']['_segments'])
         self.write_segment_list_to_beat_list()
 
+
+    def append_necessary_beats_to_tail(self,beat_length,segment_num_beat,average_energy,energy_level):
+        
+        length_of_music = float(self.track_data['duration'])
+
+        last_beat_index = int(self.beat_data['_beatList']['_beats'][-1]['_index'])
+        new_beat_index = last_beat_index + 1
+
+        print(self.beat_data['_beatList']['_beats'][-1])
+        while float(self.beat_data['_beatList']['_beats'][-1]['_triggerTime']) < length_of_music:
+            new_beat = {}
+            new_beat['_index'] = new_beat_index
+            new_beat['_beatInBar'] = (new_beat_index % 4) + 1
+            new_beat['_magnitude'] = 0
+            new_beat['_triggerTime'] = float(self.beat_data['_beatList']['_beats'][-1]['_triggerTime']) + beat_length
+            new_beat['_beatLength'] = beat_length
+            new_beat['_bpm'] = 0
+            new_beat['_isLastBeat'] = 0
+
+            print(new_beat)
+            self.beat_data['_beatList']['_beats'].append(new_beat)
+            new_beat_index = new_beat_index + 1
+
+        for beat in self.beat_data['_beatList']['_beats'][last_beat_index:]:
+            new_segment = {}
+            if (beat['_index'] ) % segment_num_beat == 0:          
+                new_segment['_startTime'] = float(beat['_triggerTime'])
+                new_segment['_startBeatIndex'] = int(beat['_index'])
+                new_segment['_numBeats'] = segment_num_beat
+                new_segment['_length'] = self.get_sum_of_beat_length(int(beat['_index']),segment_num_beat)
+                new_segment['_averageEnergy'] = average_energy
+                new_segment['_index'] = 0
+                new_segment['_energyLevel'] = energy_level
+                self.logger.debug("index={},new segment:{}".format(beat['_index'],new_segment))
+
+                self.beat_data['_segmentList']['_segments'].append(new_segment)
+
+        self.logger.debug(self.beat_data['_segmentList']['_segments'])
+        self.write_segment_list_to_beat_list()
 
     def get_segment_number_from_beat_index(self,beat_index):
 
