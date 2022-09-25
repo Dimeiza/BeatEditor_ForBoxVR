@@ -257,14 +257,16 @@ def GUI_event_loop():
             table_beat_list_col = 0
             table_segment_list_col = 0
             current_time = 0
+
             boxVRJson.loadboxVRJSON(values['_loaded_beat_file'])
             updateGUITable()
             music_file_path =window['originalFilePath'].get()
             music.set_boxVR_Json(boxVRJson)
 
             music.open_music_file(music_file_path)
-            window['delay_time'].update(music.get_delay())
+            music.set_paused_time(0)
 
+            window['delay_time'].update(music.get_delay())
             window['beat_length_for_all'].update(boxVRJson.get_calc_average_beat_length())
 
         if event == 'play':
