@@ -168,7 +168,13 @@ class BoxVRJson:
             next_index = int( self.beat_data['_beatList']['_beats'][i]['_index']) + 1
             self.beat_data['_beatList']['_beats'][i+ 1]['_index'] = next_index
 
-            
+    def flat_all_beat_length(self,beat_length_for_all):
+        for beat in self.beat_data['_beatList']['_beats']:
+            beat['_beatLength'] = beat_length_for_all
+
+        self.adjust_beat_list()
+        self.adjust_segment_list()
+        self.write_segment_list_to_beat_list()
 
     # methods for segment list
     def get_segment_data_element(self,segment_index,json_key_str):
@@ -177,7 +183,7 @@ class BoxVRJson:
     def get_segment_count(self):
         return len(self.beat_data['_segmentList']['_segments'])
 
-    def reconstructSegment(self,segment_num_beat,average_energy):
+    def reconstructSegment(self,segment_num_beat,average_energy,energy_level):
 
         self.beat_data['_segmentList']['_segments'].clear()
 
@@ -190,7 +196,7 @@ class BoxVRJson:
                 new_segment['_length'] = self.get_sum_of_beat_length(int(beat['_index']),segment_num_beat)
                 new_segment['_averageEnergy'] = average_energy
                 new_segment['_index'] = 0
-                new_segment['_energyLevel'] = 0
+                new_segment['_energyLevel'] = energy_level
                 self.logger.debug("index={},new segment:{}".format(beat['_index'],new_segment))
 
                 self.beat_data['_segmentList']['_segments'].append(new_segment)

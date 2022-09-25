@@ -170,23 +170,37 @@ def build_GUI():
         [sg.FileBrowse('load',target='_loaded_beat_file', file_types = (('BoxVR beat Files', '*.trackdata.txt'),)), sg.Button('play'),sg.Button('pause'),sg.Button('stop'),sg.FileSaveAs('save',target='_save_target_beat_file',file_types =  (('BoxVR beat Files', '*.trackdata.txt'),))],
     ]
 
+    music_playpos_group = [
+        [sg.Text('Position:'),sg.Text('',size=(20,1),key='PlayTime')],
+        [sg.Text('BoxVR music start delay:'),sg.Text('',key='delay_time')],
+    ]
+
     track_group = [
         [sg.Frame('',track_basic_information_group)],
-        [sg.Frame('',track_control_group),sg.Text('playtime:'),sg.Input('',size=(10,1),key='PlayTime'),sg.Text('delay:'),sg.Text('',key='delay_time')]
+        [sg.Frame('',track_control_group),sg.Frame('',music_playpos_group)]
     ]
 
     segment_width=[]
     for segment_label in segment_table_heading:
         segment_width.append(len(segment_label) + 3)
 
+    segment_restructure_group = [
+        [sg.Button('restruct with 16 beats',key='reconstruct_segment'),sg.Text('_averageEnergy(calories per beat):'),sg.Input('1.0',key='average_energy',size=(5,1)),sg.Text('_energyLevel:'),sg.Input('0',key='setEnergyLevel',size=(5,1))]
+    ]
+
+
     segment_group = [
         [sg.Table([[]],headings=segment_table_heading,vertical_scroll_only=False,col_widths=segment_width,key='segmentList',auto_size_columns=False,enable_click_events=True)],
-        [sg.Button('insert'),sg.Button('remove'), sg.Button('reconstruct segment with 16 beats',key='reconstruct_segment'),sg.Text('average energy:'),sg.Input('1.0',key='average_energy',size=(5,1))]    
+        [sg.Button('insert'),sg.Button('remove'),sg.Frame('restructure segment',segment_restructure_group)]    
     ]
 
     beat_width=[]
     for beat_label in beat_table_heading:
         segment_width.append(len(beat_label) + 3)
+
+    all_beat_control_group = [
+        [sg.Button('flat beatLength',key='flat_beat_length'),sg.Input('',key='beat_length_for_all',size=(20,1))]
+    ]
 
     selected_beat_control_group = [
         [sg.Button('insert beat',key='insert_beat'),sg.Button('remove beat',key='remove_beat')],
@@ -198,8 +212,9 @@ def build_GUI():
     ]
 
     beat_control_group = [
+        [sg.Frame('first beat',first_beat_control_group)],
         [sg.Frame('selected beat',selected_beat_control_group)],
-        [sg.Frame('first beat',first_beat_control_group)]
+        [sg.Frame('all baets',all_beat_control_group)],
     ]
 
     beat_group = [
@@ -249,6 +264,9 @@ def GUI_event_loop():
 
             music.open_music_file(music_file_path)
             window['delay_time'].update(music.get_delay())
+
+            window['beat_length_for_all'].update(boxVRJson.get_calc_average_beat_length())
+
         if event == 'play':
             music.stop()
             music.set_beat_callback(beat_callback_gui)
@@ -265,7 +283,8 @@ def GUI_event_loop():
             boxVRJson.saveboxVRJSON(values['_save_target_beat_file'])
         if event == 'reconstruct_segment':
             average_energy = float(window['average_energy'].get())
-            boxVRJson.reconstructSegment(16,average_energy)
+            energy_level = int(window['setEnergyLevel'].get())
+            boxVRJson.reconstructSegment(16,average_energy,energy_level)
             updateGUITable()
         if event == 'remove':
             boxVRJson.remove_segment_from_segment_list(table_segment_list_col)
@@ -273,7 +292,6 @@ def GUI_event_loop():
         if event == 'insert':
             boxVRJson.insert_segment_to_segment_list(table_segment_list_col)
             updateGUITable()
-
         if event == 'remove_beat':
             boxVRJson.remove_beat_from_beat_list(table_beat_list_col)
             updateGUITable()
@@ -281,7 +299,6 @@ def GUI_event_loop():
         if event == 'insert_beat':
             boxVRJson.insert_beat_from_beat_list(table_beat_list_col)
             updateGUITable()
-
         if event == 'double_beatlength':
             boxVRJson.multiply_selected_beat_length(table_beat_list_col,2.0)
             updateGUITable()
@@ -294,6 +311,11 @@ def GUI_event_loop():
 
         if event == 'back_first_beat_with_own_beatLength':
             boxVRJson.back_first_beat_with_own_beatLength()
+            updateGUITable()
+
+        if event == 'flat_beat_length':
+            beat_length_for_all = float(window['beat_length_for_all'].get())
+            boxVRJson.flat_all_beat_length(beat_length_for_all)
             updateGUITable()
 
         elif isinstance(event, tuple):
