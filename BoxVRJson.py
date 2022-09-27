@@ -53,10 +53,10 @@ class BoxVRJson:
 
     def get_sum_of_beat_length(self,start_index,num_beats):
 
-        sum_of_beat_length =0
+        sum_of_beat_length =0.0
         for beat in self.beat_data['_beatList']['_beats']:
             if start_index <= beat['_index'] and beat['_index'] < start_index + num_beats:
-                sum_of_beat_length = sum_of_beat_length + beat['_beatLength']
+                sum_of_beat_length = sum_of_beat_length + float(beat['_beatLength'])
         
         return sum_of_beat_length
 
