@@ -20,9 +20,7 @@ This tool can:
 
 ## Demo
 
-T.B.D.
-
-I will upload a demo movie to youtube soon.
+[![](https://img.youtube.com/vi/otg2Z17wYOE/0.jpg)](https://www.youtube.com/watch?v=otg2Z17wYOE)
 
 ## VS.
 
